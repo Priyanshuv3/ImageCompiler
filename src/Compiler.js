@@ -3,21 +3,17 @@ import "./Compiler.css";
 export default class Compiler extends Component {
   constructor(props) {
     super(props);
-    console.log("I am in constuctor",this.props.test);
-    
     this.state = {
       input: localStorage.getItem("input") || ``,
       output: ``,
       language_id: localStorage.getItem("language_Id") || 2,
       user_input: ``,
     };
-    this.state.input=this.props.test;
   }
   input = (event) => {
     event.preventDefault();
-    // this.setState({ input: event.target.value });
     localStorage.setItem("input", event.target.value);
-    this.state.input=localStorage.getItem("input");
+    this.setState({ input: event.target.value }, () => {});
   };
 
   userInput = (event) => {
@@ -30,9 +26,15 @@ export default class Compiler extends Component {
     this.setState({ language_id: event.target.value });
     localStorage.setItem("language_Id", event.target.value);
   };
-
+  updateCode() {
+    if (this.state.input !== localStorage.getItem("input")) {
+      this.setState({ input: localStorage.getItem("input") });
+      console.log("State Updated");
+    }
+  }
   submit = async (e) => {
     e.preventDefault();
+    this.props.onMessage("true");
     let outputText = document.getElementById("output");
     outputText.innerHTML = "";
     outputText.innerHTML += "Creating Submission ...\n";
@@ -54,7 +56,7 @@ export default class Compiler extends Component {
         }),
       }
     );
-
+    
     outputText.innerHTML += "Submission Created ...\n";
     const jsonResponse = await response.json();
     let jsonGetSolution = {
@@ -62,6 +64,7 @@ export default class Compiler extends Component {
       stderr: null,
       compile_output: null,
     };
+    this.props.onMessage(false);
     while (
       jsonGetSolution.status.description !== "Accepted" &&
       jsonGetSolution.stderr == null &&
@@ -99,8 +102,8 @@ export default class Compiler extends Component {
   };
 
   render() {
-    localStorage.setItem("input",this.props.test )
-    this.state.input=localStorage.getItem("input");
+    this.updateCode();
+
     return (
       <>
         <div className="compilerContainer">
@@ -109,7 +112,6 @@ export default class Compiler extends Component {
               <span className="badge badge-info heading mt-2 ">
                 <i className="fas fa-code fa-fw fa-lg"></i> Code Here
               </span>
-
             </label>
             <textarea
               required
@@ -148,21 +150,21 @@ export default class Compiler extends Component {
           <div className="col-5">
             <div></div>
           </div>
-        <div className="section2">
-          <span className="badge badge-primary heading my-2 ">
-            <i className="fas fa-user fa-fw fa-md"></i> User Input
-          </span>
-          <br />
-          <textarea id="input" onChange={this.userInput}></textarea>
-          <br />
-          <span className="badge badge-info heading my-2 ">
-            <i className="fas fa-exclamation fa-fw fa-md"></i> Output
-          </span>
+          <div className="section2">
+            <span className="badge badge-primary heading my-2 ">
+              <i className="fas fa-user fa-fw fa-md"></i> User Input
+            </span>
+            <br />
+            <textarea id="input" onChange={this.userInput}></textarea>
+            <br />
+            <span className="badge badge-info heading my-2 ">
+              <i className="fas fa-exclamation fa-fw fa-md"></i> Output
+            </span>
 
-          <br />
+            <br />
 
-          <textarea id="output"></textarea>
-        </div>
+            <textarea id="output"></textarea>
+          </div>
         </div>
       </>
     );
